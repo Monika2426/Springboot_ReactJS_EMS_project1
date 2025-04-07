@@ -1,23 +1,45 @@
-import React, { useState } from "react";
-import { createDepartment } from "../services/DepartmentService.js";
+import React, { useEffect, useState } from "react";
+import { createDepartment, getDepartmentById, updateDepartment } from "../services/DepartmentService.js";
 import { useNavigate, useParams } from "react-router-dom";
 
 const DepartmentComponent = () => {
     const [departmentName,setDepartmentName]=useState('');
     const [departmentDescription,setDepartmentDescription]=useState('')
+
     const navigator=useNavigate();
     const {id}=useParams();
 
+    useEffect(()=>{
+        if(id){
+            getDepartmentById(id).then((response)=>{
+                setDepartmentName(response.data.departmentName),
+                setDepartmentDescription(response.data.departmentDescription)
+            }).catch(error=>{
+                console.error(error);
+            })
+        }
+    },[id]);
 
-function saveDepartment(e){
+
+function saveOrUpdateDepartment(e){
     e.preventDefault();
     const department={departmentName,departmentDescription};
-    createDepartment(department).then((response)=>{
-        console.log(response.data);
-        navigator('/departments');
-    }).catch(error=>{
-        console.error(error);
-    })
+    if(id){
+        updateDepartment(id,department).then((response)=>{
+            console.log(response.data);
+            navigator('/departments');
+        }).catch(error=>{
+            console.error(error);
+        });
+
+    } else{
+        createDepartment(department).then((response)=>{
+            console.log(response.data);
+            navigator('/departments');
+        }).catch(error=>{
+            console.error(error);
+        });
+    }    
 }
 
 function pageTitle(){
@@ -46,7 +68,7 @@ function pageTitle(){
                                 <label className='form-label'>Department Description:</label>
                                 <input className='form-control' type='text' name='departmentDescription' placeholder='Enter department description' value={departmentDescription} onChange={(e)=>setDepartmentDescription(e.target.value)}></input>
                             </div>
-                            <button className='btn btn-success mb-2' onClick={(e)=>saveDepartment(e)}>Submit</button>
+                            <button className='btn btn-success mb-2' onClick={(e)=>saveOrUpdateDepartment(e)}>Submit</button>
                         </form>
                     </div>
                 </div>
